@@ -1,0 +1,31 @@
+{
+  "rules": {
+    "students": {
+      "$uid": {
+        ".read": "auth.uid === $uid || root.child('admins').child(auth.uid).exists()",
+        ".write": "auth.uid === $uid || root.child('admins').child(auth.uid).exists()",
+        "sifre": {
+          ".read": false,
+          ".write": "auth.uid === $uid"
+        },
+        "icazeli_fenler": {
+          ".read": "auth.uid === $uid",
+          ".write": "root.child('admins').child(auth.uid).exists()"
+        },
+        "imtahan_naticeleri": {
+          ".read": "auth.uid === $uid",
+          ".write": "root.child('admins').child(auth.uid).exists()"
+        },
+        "apellyasiya": {
+          ".read": "auth.uid === $uid",
+          ".write": "auth.uid === $uid"
+        }
+      },
+      ".indexOn": ["telefon", "istifadechi"]
+    },
+    "admins": {
+      ".read": "auth.uid !== null",
+      ".write": false
+    }
+  }
+}
