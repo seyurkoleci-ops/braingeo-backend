@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BRAINGEO - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .admin-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+            font-size: 15px;
+        }
+
+        .tab-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: Arial, sans-serif;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+
+        .students-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .students-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        .students-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .students-table tr:hover {
+            background: #f8f9ff;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .students-table {
+                font-size: 13px;
+            }
+
+            .students-table td, .students-table th {
+                padding: 8px;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="admin-container">
+    <div class="header">
+        <h1>🧠 BRAINGEO Admin Panel</h1>
+        <p>Olimpiada platformasının idarə edilməsi</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('students')">👥 Şagirdlər</button>
+        <button class="tab-btn" onclick="switchTab('allow-subject')">✅ Fön İcazəsi</button>
+        <button class="tab-btn" onclick="switchTab('exam-results')">📊 İmtahan Nəticələri</button>
+        <button class="tab-btn" onclick="switchTab('settings')">⚙️ Ayarlar</button>
+    </div>
+
+    <div id="message-box"></div>
+
+    <!-- TAB 1: ŞAGIRDLƏR -->
+    <div id="students" class="tab-content active">
+        <h2>👥 Bütün Şagirdlər</h2>
+        
+        <div class="form-group">
+            <label>Admin Şifrəsi:</label>
+            <input type="password" id="admin-password-students" placeholder="Admin şifrəsini daxil edin">
+        </div>
+
+        <button onclick="loadAllStudents()">Şagirdləri Yüklə</button>
+
+        <div id="students-list"></div>
+    </div>
+
+    <!-- TAB 2: FÖN İCAZƏSİ -->
+    <div id="allow-subject" class="tab-content">
+        <h2>✅ Şagirdə Fön İcazəsi Vər</h2>
+        
+        <div class="form-group">
+            <label>Admin Şifrəsi:</label>
+            <input type="password" id="admin-password-subject" placeholder="Admin şifrəsini daxil edin">
+        </div>
+
+        <div class="form-group">
+            <label>Şagird ID:</label>
+            <input type="text" id="subject-student-id" placeholder="Şagirdin ID-sini daxil edin">
+        </div>
+
+        <div class="form-group">
+            <label>Fön:</label>
+            <select id="subject-name">
+                <option value="">Fən seçin</option>
+                <option value="Azerbaycan dili">Azerbaycan dili</option>
+                <option value="Gurcu dili">Gurcu dili</option>
+                <option value="İngilis dili">İngilis dili</option>
+                <option value="Riyaziyyat">Riyaziyyat</option>
+                <option value="Rus dili">Rus dili</option>
+                <option value="Musiqi">Musiqi</option>
+                <option value="Mentiq">Mentiq</option>
+                <option value="Incesenet">Incesenet</option>
+                <option value="Vetendas tehsili">Vetendas tehsili</option>
+                <option value="Fizika">Fizika</option>
+                <option value="Cografiya">Cografiya</option>
+                <option value="Tarix">Tarix</option>
+                <option value="Kimya">Kimya</option>
+                <option value="Biologiya">Biologiya</option>
+                <option value="Informatika">Informatika</option>
+                <option value="Tebiet">Tebiet</option>
+            </select>
+        </div>
+
+        <button onclick="allowSubjectToStudent()">İcazə Vər</button>
+    </div>
+
+    <!-- TAB 3: İMTAHAN NƏTİCƏLƏRİ -->
+    <div id="exam-results" class="tab-content">
+        <h2>📊 İmtahan Nəticəsi Əlavə Et</h2>
+        
+        <div class="form-group">
+            <label>Admin Şifrəsi:</label>
+            <input type="password" id="admin-password-results" placeholder="Admin şifrəsini daxil edin">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Şagird ID:</label>
+                <input type="text" id="result-student-id" placeholder="Şagirdin ID-sini daxil edin">
+            </div>
+
+            <div class="form-group">
+                <label>Fön:</label>
+                <select id="result-subject">
+                    <option value="">Fən seçin</option>
+                    <option value="Azerbaycan dili">Azerbaycan dili</option>
+                    <option value="Gurcu dili">Gurcu dili</option>
+                    <option value="İngilis dili">İngilis dili</option>
+                    <option value="Riyaziyyat">Riyaziyyat</option>
+                    <option value="Rus dili">Rus dili</option>
+                    <option value="Musiqi">Musiqi</option>
+                    <option value="Mentiq">Mentiq</option>
+                    <option value="Incesenet">Incesenet</option>
+                    <option value="Vetendas tehsili">Vetendas tehsili</option>
+                    <option value="Fizika">Fizika</option>
+                    <option value="Cografiya">Cografiya</option>
+                    <option value="Tarix">Tarix</option>
+                    <option value="Kimya">Kimya</option>
+                    <option value="Biologiya">Biologiya</option>
+                    <option value="Informatika">Informatika</option>
+                    <option value="Tebiet">Tebiet</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Bal (0-100):</label>
+                <input type="number" id="result-score" placeholder="İmtahan balı" min="0" max="100">
+            </div>
+
+            <div class="form-group">
+                <label>Tarix:</label>
+                <input type="date" id="result-date">
+            </div>
+        </div>
+
+        <button onclick="saveExamResult()">Nəticə Saxla</button>
+    </div>
+
+    <!-- TAB 4: AYARLAR -->
+    <div id="settings" class="tab-content">
+        <h2>⚙️ Sistem Ayarları</h2>
+        
+        <div class="alert alert-info">
+            📌 Backend URL: <strong>http://localhost:5000/api</strong>
+        </div>
+
+        <div class="alert alert-info">
+            📌 Firebase Database: <strong>europe-west1 (Belgium)</strong>
+        </div>
+
+        <div class="form-group">
+            <label>Backend API URL:</label>
+            <input type="text" id="api-url" value="http://localhost:5000/api" placeholder="Backend URL">
+            <small style="color: #666; margin-top: 5px; display: block;">Production üçün Heroku/Replit URL-ini daxil edin</small>
+        </div>
+
+        <button onclick="saveSettings()">Ayarları Saxla</button>
+
+        <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+
+        <h3 style="margin-top: 30px; color: #667eea;">API Test</h3>
+        <button onclick="testBackendConnection()">Backend Əlaqəsini Test Et</button>
+    </div>
+
+</div>
+
+<script>
+    let API_URL = localStorage.getItem('apiUrl') || 'http://localhost:5000/api';
+
+    function switchTab(tabName) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.classList.remove('active'));
+
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function showMessage(message, type = 'success') {
+        const messageBox = document.getElementById('message-box');
+        messageBox.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        setTimeout(() => {
+            messageBox.innerHTML = '';
+        }, 5000);
+    }
+
+    async function loadAllStudents() {
+        const adminPassword = document.getElementById('admin-password-students').value;
+
+        if (!adminPassword) {
+            showMessage('❌ Admin şifrəsini daxil edin!', 'error');
+            return;
+        }
+
+        const studentsList = document.getElementById('students-list');
+        studentsList.innerHTML = '<div class="loading"><div class="spinner"></div> Yüklənir...</div>';
+
+        try {
+            const response = await fetch(`${API_URL}/admin/all-students?adminPassword=${adminPassword}`);
+            const data = await response.json();
+
+            if (data.success) {
+                let html = `<p style="font-weight: bold; color: #667eea; margin-top: 20px;">Toplam: ${data.toplam} şagird</p>`;
+                html += '<table class="students-table"><thead><tr><th>Ad</th><th>Soyad</th><th>Sinif</th><th>Məktəb</th><th>Telefon</th><th>İcazəli Fənlər</th></tr></thead><tbody>';
+
+                data.students.forEach(student => {
+                    html += `
+                        <tr>
+                            <td>${student.ad}</td>
+                            <td>${student.soyad}</td>
+                            <td>${student.sinif}</td>
+                            <td>${student.mekteb}</td>
+                            <td>${student.telefon}</td>
+                            <td>${student.icazeli_fenler.length > 0 ? student.icazeli_fenler.join(', ') : 'Yoxdur'}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+                studentsList.innerHTML = html;
+            } else {
+                showMessage('❌ ' + data.error, 'error');
+                studentsList.innerHTML = '';
+            }
+        } catch (error) {
+            showMessage('❌ Network xətası: ' + error.message, 'error');
+            studentsList.innerHTML = '';
+        }
+    }
+
+    async function allowSubjectToStudent() {
+        const adminPassword = document.getElementById('admin-password-subject').value;
+        const studentId = document.getElementById('subject-student-id').value;
+        const fen = document.getElementById('subject-name').value;
+
+        if (!adminPassword || !studentId || !fen) {
+            showMessage('❌ Bütün sahələri doldurun!', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/admin/allow-subject`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ adminPassword, studentId, fen })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showMessage('✅ ' + data.message, 'success');
+                document.getElementById('subject-student-id').value = '';
+                document.getElementById('subject-name').value = '';
+            } else {
+                showMessage('❌ ' + data.error, 'error');
+            }
+        } catch (error) {
+            showMessage('❌ Network xətası: ' + error.message, 'error');
+        }
+    }
+
+    async function saveExamResult() {
+        const adminPassword = document.getElementById('admin-password-results').value;
+        const studentId = document.getElementById('result-student-id').value;
+        const fen = document.getElementById('result-subject').value;
+        const bal = document.getElementById('result-score').value;
+        const tarix = document.getElementById('result-date').value;
+
+        if (!adminPassword || !studentId || !fen || !bal) {
+            showMessage('❌ Bütün sahələri doldurun!', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/save-exam-result`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ adminPassword, studentId, fen, bal, tarix })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showMessage('✅ Nəticə uğurla saxlanıldı!', 'success');
+                document.getElementById('result-student-id').value = '';
+                document.getElementById('result-subject').value = '';
+                document.getElementById('result-score').value = '';
+                document.getElementById('result-date').value = '';
+            } else {
+                showMessage('❌ ' + data.error, 'error');
+            }
+        } catch (error) {
+            showMessage('❌ Network xətası: ' + error.message, 'error');
+        }
+    }
+
+    function saveSettings() {
+        const apiUrl = document.getElementById('api-url').value;
+        localStorage.setItem('apiUrl', apiUrl);
+        API_URL = apiUrl;
+        showMessage('✅ Ayarlar saxlanıldı!', 'success');
+    }
+
+    async function testBackendConnection() {
+        try {
+            const response = await fetch(`${API_URL}/health`);
+            const data = await response.json();
+            showMessage('✅ Backend Sağlam! ' + data.message, 'success');
+        } catch (error) {
+            showMessage('❌ Backend əlaqə uğursuz! URL-i kontrol edin.', 'error');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('api-url').value = API_URL;
+        testBackendConnection();
+    });
+</script>
+
+</body>
+</html>
